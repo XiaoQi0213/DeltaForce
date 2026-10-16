@@ -5,166 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>三角洲行動 - 改槍代碼庫</title>
     <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0d1117;
-            background-image: radial-gradient(circle at 50% 0%, #1a2332 0%, #0d1117 80%);
-            color: #e6edf3;
-            min-height: 100vh;
-        }
-
-        h1 {
-            text-align: center;
-            color: #58a6ff;
-            letter-spacing: 2px;
-            margin-bottom: 40px;
-        }
-
-        .glass-panel {
-            background: rgba(22, 27, 34, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        .add-form-container {
-            max-width: 600px;
-            margin: 0 auto 30px auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .add-form-container h3 {
-            margin: 0;
-            color: #ffffff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
-        }
-
-        .search-container {
-            max-width: 1200px;
-            margin: 0 auto 20px auto;
-            padding: 15px 20px;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .form-input {
-            background: rgba(1, 4, 9, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #e6edf3;
-            padding: 12px;
-            border-radius: 6px;
-            outline: none;
-            font-size: 1em;
-            box-sizing: border-box;
-        }
-        
+        body { margin: 0; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; background-image: radial-gradient(circle at 50% 0%, #1a2332 0%, #0d1117 80%); color: #e6edf3; min-height: 100vh; }
+        h1 { text-align: center; color: #58a6ff; letter-spacing: 2px; margin-bottom: 40px; }
+        .glass-panel { background: rgba(22, 27, 34, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .add-form-container { max-width: 600px; margin: 0 auto 30px auto; display: flex; flex-direction: column; gap: 15px; }
+        .add-form-container h3 { margin: 0; color: #ffffff; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+        .search-container { max-width: 1200px; margin: 0 auto 20px auto; padding: 15px 20px; }
+        .input-group { display: flex; gap: 10px; }
+        .form-input { background: rgba(1, 4, 9, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); color: #e6edf3; padding: 12px; border-radius: 6px; outline: none; font-size: 1em; box-sizing: border-box; }
         .form-input:focus { border-color: #58a6ff; }
-
-        .search-input {
-            width: 100%;
-            font-size: 1.1em;
-        }
-
-        .btn-primary {
-            background: #1f6feb;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-            width: 100%;
-            font-size: 1.1em;
-        }
+        .search-input { width: 100%; font-size: 1.1em; }
+        .btn-primary { background: #1f6feb; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; width: 100%; font-size: 1.1em; }
         .btn-primary:hover { background: #388bfd; }
-
-        #weapon-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .glass-card {
-            transition: transform 0.2s ease, border-color 0.2s ease;
-            position: relative;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(88, 166, 255, 0.5);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .weapon-name {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin: 0;
-            color: #ffffff;
-        }
-
-        .delete-btn {
-            background: rgba(218, 54, 51, 0.2);
-            color: #ff7b72;
-            border: 1px solid rgba(218, 54, 51, 0.5);
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8em;
-            transition: all 0.2s;
-        }
-        .delete-btn:hover {
-            background: #da3633;
-            color: white;
-        }
-
-        .code-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        .code-input {
-            flex-grow: 1;
-            background: rgba(1, 4, 9, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #58a6ff;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.9em;
-            outline: none;
-        }
-
-        .copy-btn {
-            background: #238636;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
+        #weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .glass-card { transition: transform 0.2s ease, border-color 0.2s ease; position: relative; }
+        .glass-card:hover { transform: translateY(-5px); border-color: rgba(88, 166, 255, 0.5); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; margin-bottom: 15px; }
+        .weapon-name { font-size: 1.5em; font-weight: bold; margin: 0; color: #ffffff; }
+        .delete-btn { background: rgba(218, 54, 51, 0.2); color: #ff7b72; border: 1px solid rgba(218, 54, 51, 0.5); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8em; transition: all 0.2s; }
+        .delete-btn:hover { background: #da3633; color: white; }
+        .code-container { display: flex; gap: 10px; }
+        .code-input { flex-grow: 1; background: rgba(1, 4, 9, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); color: #58a6ff; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.9em; outline: none; }
+        .copy-btn { background: #238636; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         .copy-btn:hover { background: #2ea043; }
     </style>
     <!-- 引入 Supabase 函式庫 -->
@@ -174,7 +36,6 @@
 
     <h1>三角洲行動 戰術終端 - 改槍代碼</h1>
 
-    <!-- 新增表單區塊 -->
     <div class="glass-panel add-form-container">
         <h3>➕ 登錄新改槍配置</h3>
         <div class="input-group">
@@ -184,26 +45,25 @@
         <button class="btn-primary" onclick="addWeapon()">發布至雲端</button>
     </div>
 
-    <!-- 搜尋列區塊 -->
     <div class="glass-panel search-container">
         <input type="text" id="search-input" class="form-input search-input" placeholder="🔍 搜尋槍枝名稱或代碼..." oninput="renderCards()">
     </div>
     
-    <!-- 卡片顯示區塊 -->
     <div id="weapon-grid"></div>
 
     <script>
         const supabaseUrl = 'https://mpfofljkzjjqcssutvjv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZm9mbGprempqcWNzc3V0dmp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMjk2NjUsImV4cCI6MjEwNzcwNTY2NX0.MbACCQDyAsUTdgym3U2pcQ21i4vj9zOTBEXdA2q_uaw';
         
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // 【修復語法衝突】：把變數名稱從 supabase 改成 db
+        const db = window.supabase.createClient(supabaseUrl, supabaseKey);
         const grid = document.getElementById('weapon-grid');
         let weaponData = [];
 
         async function fetchWeapons() {
             grid.innerHTML = '<p style="text-align: center; color: #8b949e; grid-column: 1 / -1;">正在從伺服器載入資料...</p>';
             
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('weapons')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -261,7 +121,7 @@
                 return;
             }
 
-            const { error } = await supabase
+            const { error } = await db
                 .from('weapons')
                 .insert([ { name: name, code: code } ]);
 
@@ -279,7 +139,7 @@
 
         async function deleteWeapon(id) {
             if(confirm("確定要刪除這個改槍代碼嗎？")) {
-                const { error } = await supabase
+                const { error } = await db
                     .from('weapons')
                     .delete()
                     .eq('id', id);
