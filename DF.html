@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三角洲行動 - 改槍代碼庫</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117;
+            background-image: radial-gradient(circle at 50% 0%, #1a2332 0%, #0d1117 80%);
+            color: #e6edf3;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #58a6ff;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+        }
+
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .add-form-container {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .add-form-container h3 {
+            margin: 0;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        /* 搜尋列專用樣式 */
+        .search-container {
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+            padding: 15px 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-input {
+            background: rgba(1, 4, 9, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e6edf3;
+            padding: 12px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus { border-color: #58a6ff; }
+
+        .search-input {
+            width: 100%;
+            font-size: 1.1em;
+        }
+
+        .btn-primary {
+            background: #1f6feb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            width: 100%;
+            font-size: 1.1em;
+        }
+        .btn-primary:hover { background: #388bfd; }
+
+        #weapon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            position: relative;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(88, 166, 255, 0.5);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .weapon-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .delete-btn {
+            background: rgba(218, 54, 51, 0.2);
+            color: #ff7b72;
+            border: 1px solid rgba(218, 54, 51, 0.5);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.2s;
+        }
+        .delete-btn:hover {
+            background: #da3633;
+            color: white;
+        }
+
+        .code-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .code-input {
+            flex-grow: 1;
+            background: rgba(1, 4, 9, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #58a6ff;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9em;
+            outline: none;
+        }
+
+        .copy-btn {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: #2ea043; }
+    </style>
+</head>
+<body>
+
+    <h1>三角洲行動 戰術終端 - 改槍代碼</h1>
+
+    <!-- 新增表單區塊 -->
+    <div class="glass-panel add-form-container">
+        <h3>➕ 登錄新改槍配置</h3>
+        <div class="input-group">
+            <input type="text" id="input-name" class="form-input" placeholder="槍枝名稱 (例: AS VAL)" style="flex: 1;">
+            <input type="text" id="input-code" class="form-input" placeholder="貼上遊戲內的改裝代碼" style="flex: 2;">
+        </div>
+        <button class="btn-primary" onclick="addWeapon()">發布至資料庫</button>
+    </div>
+
+    <!-- 搜尋列區塊 -->
+    <div class="glass-panel search-container">
+        <input type="text" id="search-input" class="form-input search-input" placeholder="🔍 搜尋槍枝名稱或代碼..." oninput="renderCards()">
+    </div>
+    
+    <!-- 卡片顯示區塊 -->
+    <div id="weapon-grid"></div>
+
+    <script>
+        const defaultData = [
+            {
+                id: 1,
+                name: "M4A1",
+                code: "M4A1-12345-ABCDE-67890"
+            },
+            {
+                id: 2,
+                name: "AK-47",
+                code: "AK47-QWERT-YUIOP-ASDFG"
+            }
+        ];
+
+        let weaponData = JSON.parse(localStorage.getItem('deltaWeapons_v4'));
+        if (!weaponData) {
+            weaponData = defaultData;
+            saveData();
+        }
+
+        const grid = document.getElementById('weapon-grid');
+
+        function renderCards() {
+            grid.innerHTML = '';
+            
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            let displayData = [...weaponData].reverse(); 
+
+            if (searchTerm !== '') {
+                displayData = displayData.filter(weapon => 
+                    weapon.name.toLowerCase().includes(searchTerm) || 
+                    weapon.code.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (displayData.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: #8b949e; grid-column: 1 / -1;">找不到符合的改槍代碼</p>';
+                return;
+            }
+
+            displayData.forEach((weapon) => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel glass-card';
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h2 class="weapon-name">${weapon.name}</h2>
+                        <button class="delete-btn" onclick="deleteWeapon(${weapon.id})">刪除</button>
+                    </div>
+                    <div class="code-container">
+                        <input type="text" class="code-input" value="${weapon.code}" readonly>
+                        <button class="copy-btn" onclick="copyCode('${weapon.code}', this)">複製</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addWeapon() {
+            const name = document.getElementById('input-name').value.trim();
+            const code = document.getElementById('input-code').value.trim();
+
+            if (!name || !code) {
+                alert('槍枝名稱與改裝代碼為必填！');
+                return;
+            }
+
+            weaponData.push({
+                id: Date.now(),
+                name: name,
+                code: code
+            });
+
+            saveData();
+            
+            document.getElementById('search-input').value = '';
+            renderCards();
+
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-code').value = '';
+        }
+
+        function deleteWeapon(id) {
+            if(confirm("確定要刪除這個改槍代碼嗎？")) {
+                weaponData = weaponData.filter(weapon => weapon.id !== id);
+                saveData();
+                renderCards(); 
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('deltaWeapons_v4', JSON.stringify(weaponData));
+        }
+
+        function copyCode(code, btnElement) {
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btnElement.innerText;
+                const originalBg = btnElement.style.background;
+                
+                btnElement.innerText = "已複製！";
+                btnElement.style.background = "#1f6feb";
+                
+                setTimeout(() => {
+                    btnElement.innerText = originalText;
+                    btnElement.style.background = originalBg;
+                }, 1500);
+            }).catch(err => {
+                alert('複製失敗，請手動選取複製。');
+            });
+        }
+
+        renderCards();
+    </script>
+</body>
+</html>
