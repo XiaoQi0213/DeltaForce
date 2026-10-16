@@ -47,7 +47,6 @@
             padding-bottom: 10px;
         }
 
-        /* 搜尋列專用樣式 */
         .search-container {
             max-width: 1200px;
             margin: 0 auto 20px auto;
@@ -168,6 +167,8 @@
         }
         .copy-btn:hover { background: #2ea043; }
     </style>
+    <!-- 引入 Supabase 函式庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -180,7 +181,7 @@
             <input type="text" id="input-name" class="form-input" placeholder="槍枝名稱 (例: AS VAL)" style="flex: 1;">
             <input type="text" id="input-code" class="form-input" placeholder="貼上遊戲內的改裝代碼" style="flex: 2;">
         </div>
-        <button class="btn-primary" onclick="addWeapon()">發布至資料庫</button>
+        <button class="btn-primary" onclick="addWeapon()">發布至雲端</button>
     </div>
 
     <!-- 搜尋列區塊 -->
@@ -192,32 +193,39 @@
     <div id="weapon-grid"></div>
 
     <script>
-        const defaultData = [
-            {
-                id: 1,
-                name: "M4A1",
-                code: "M4A1-12345-ABCDE-67890"
-            },
-            {
-                id: 2,
-                name: "AK-47",
-                code: "AK47-QWERT-YUIOP-ASDFG"
-            }
-        ];
+        // 【注意】請在這裡填入你剛剛複製的那一長串 anon key
+        const supabaseUrl = 'https://mpfofljkzjjqcssutvjv.supabase.co/rest/v1/';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZm9mbGprempqcWNzc3V0dmp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMjk2NjUsImV4cCI6MjEwNzcwNTY2NX0.MbACCQDyAsUTdgym3U2pcQ21i4vj9zOTBEXdA2q_uaw';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const grid = document.getElementById('weapon-grid');
+        let weaponData = [];
 
-        let weaponData = JSON.parse(localStorage.getItem('deltaWeapons_v4'));
-        if (!weaponData) {
-            weaponData = defaultData;
-            saveData();
+        // 從雲端資料庫撈取所有資料
+        async function fetchWeapons() {
+            grid.innerHTML = '<p style="text-align: center; color: #8b949e; grid-column: 1 / -1;">正在從伺服器載入資料...</p>';
+            
+            // 從 weapons 資料表抓取，並依照建立時間反向排序 (最新的在前面)
+            const { data, error } = await supabase
+                .from('weapons')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("讀取失敗:", error);
+                grid.innerHTML = '<p style="text-align: center; color: #ff7b72; grid-column: 1 / -1;">資料庫連線失敗，請檢查 URL 或 Key 是否正確。</p>';
+                return;
+            }
+
+            weaponData = data;
+            renderCards();
         }
 
-        const grid = document.getElementById('weapon-grid');
-
+        // 渲染卡片 (包含搜尋過濾)
         function renderCards() {
             grid.innerHTML = '';
-            
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
-            let displayData = [...weaponData].reverse(); 
+            let displayData = weaponData;
 
             if (searchTerm !== '') {
                 displayData = displayData.filter(weapon => 
@@ -227,14 +235,13 @@
             }
 
             if (displayData.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; color: #8b949e; grid-column: 1 / -1;">找不到符合的改槍代碼</p>';
+                grid.innerHTML = '<p style="text-align: center; color: #8b949e; grid-column: 1 / -1;">目前沒有資料或找不到符合的代碼</p>';
                 return;
             }
 
             displayData.forEach((weapon) => {
                 const card = document.createElement('div');
                 card.className = 'glass-panel glass-card';
-                
                 card.innerHTML = `
                     <div class="card-header">
                         <h2 class="weapon-name">${weapon.name}</h2>
@@ -249,7 +256,8 @@
             });
         }
 
-        function addWeapon() {
+        // 新增資料到雲端
+        async function addWeapon() {
             const name = document.getElementById('input-name').value.trim();
             const code = document.getElementById('input-code').value.trim();
 
@@ -258,51 +266,58 @@
                 return;
             }
 
-            weaponData.push({
-                id: Date.now(),
-                name: name,
-                code: code
-            });
+            // 寫入 Supabase
+            const { error } = await supabase
+                .from('weapons')
+                .insert([ { name: name, code: code } ]);
 
-            saveData();
+            if (error) {
+                alert('上傳失敗：' + error.message);
+                return;
+            }
             
             document.getElementById('search-input').value = '';
-            renderCards();
-
             document.getElementById('input-name').value = '';
             document.getElementById('input-code').value = '';
+            
+            // 寫入成功後，重新抓取最新資料
+            fetchWeapons();
         }
 
-        function deleteWeapon(id) {
+        // 從雲端刪除資料
+        async function deleteWeapon(id) {
             if(confirm("確定要刪除這個改槍代碼嗎？")) {
-                weaponData = weaponData.filter(weapon => weapon.id !== id);
-                saveData();
-                renderCards(); 
+                const { error } = await supabase
+                    .from('weapons')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    alert('刪除失敗：' + error.message);
+                    return;
+                }
+
+                // 刪除成功後，重新抓取最新資料
+                fetchWeapons();
             }
         }
 
-        function saveData() {
-            localStorage.setItem('deltaWeapons_v4', JSON.stringify(weaponData));
-        }
-
+        // 複製按鈕功能
         function copyCode(code, btnElement) {
             navigator.clipboard.writeText(code).then(() => {
                 const originalText = btnElement.innerText;
                 const originalBg = btnElement.style.background;
-                
                 btnElement.innerText = "已複製！";
                 btnElement.style.background = "#1f6feb";
-                
                 setTimeout(() => {
                     btnElement.innerText = originalText;
                     btnElement.style.background = originalBg;
                 }, 1500);
-            }).catch(err => {
-                alert('複製失敗，請手動選取複製。');
-            });
+            }).catch(() => alert('複製失敗，請手動選取複製。'));
         }
 
-        renderCards();
+        // 網頁載入時立刻去雲端抓資料
+        fetchWeapons();
     </script>
 </body>
 </html>
