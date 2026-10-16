@@ -193,7 +193,6 @@
     <div id="weapon-grid"></div>
 
     <script>
-        // 【注意】請在這裡填入你剛剛複製的那一長串 anon key
         const supabaseUrl = 'https://mpfofljkzjjqcssutvjv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZm9mbGprempqcWNzc3V0dmp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMjk2NjUsImV4cCI6MjEwNzcwNTY2NX0.MbACCQDyAsUTdgym3U2pcQ21i4vj9zOTBEXdA2q_uaw';
         
@@ -201,11 +200,9 @@
         const grid = document.getElementById('weapon-grid');
         let weaponData = [];
 
-        // 從雲端資料庫撈取所有資料
         async function fetchWeapons() {
             grid.innerHTML = '<p style="text-align: center; color: #8b949e; grid-column: 1 / -1;">正在從伺服器載入資料...</p>';
             
-            // 從 weapons 資料表抓取，並依照建立時間反向排序 (最新的在前面)
             const { data, error } = await supabase
                 .from('weapons')
                 .select('*')
@@ -221,7 +218,6 @@
             renderCards();
         }
 
-        // 渲染卡片 (包含搜尋過濾)
         function renderCards() {
             grid.innerHTML = '';
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
@@ -256,7 +252,6 @@
             });
         }
 
-        // 新增資料到雲端
         async function addWeapon() {
             const name = document.getElementById('input-name').value.trim();
             const code = document.getElementById('input-code').value.trim();
@@ -266,7 +261,6 @@
                 return;
             }
 
-            // 寫入 Supabase
             const { error } = await supabase
                 .from('weapons')
                 .insert([ { name: name, code: code } ]);
@@ -280,11 +274,9 @@
             document.getElementById('input-name').value = '';
             document.getElementById('input-code').value = '';
             
-            // 寫入成功後，重新抓取最新資料
             fetchWeapons();
         }
 
-        // 從雲端刪除資料
         async function deleteWeapon(id) {
             if(confirm("確定要刪除這個改槍代碼嗎？")) {
                 const { error } = await supabase
@@ -297,12 +289,10 @@
                     return;
                 }
 
-                // 刪除成功後，重新抓取最新資料
                 fetchWeapons();
             }
         }
 
-        // 複製按鈕功能
         function copyCode(code, btnElement) {
             navigator.clipboard.writeText(code).then(() => {
                 const originalText = btnElement.innerText;
@@ -316,7 +306,6 @@
             }).catch(() => alert('複製失敗，請手動選取複製。'));
         }
 
-        // 網頁載入時立刻去雲端抓資料
         fetchWeapons();
     </script>
 </body>
